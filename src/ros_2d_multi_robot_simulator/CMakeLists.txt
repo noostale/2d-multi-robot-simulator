@@ -222,9 +222,13 @@ include_directories(
 # add_executable(laser_publisher src/laser_publisher.cpp)
 # target_link_libraries(laser_publisher ${catkin_LIBRARIES})
 
+# Syntax of the add_executable command:
+# add_executable(name_of_executable source_file1 source_file2 ... source_filen)
 
-add_executable(map_publisher src/map_publisher.cpp src/roblibs/grid_map.cpp src/roblibs/world_item.cpp src/roblibs/draw_helpers.cpp src/roblibs/laser_scanner.cpp src/roblibs/laser_scan.cpp src/yaml/yaml_parser.cpp)
-target_link_libraries(map_publisher ${catkin_LIBRARIES} ${OpenCV_LIBS} ${YAML_CPP_LIBRARIES})
-# target_link_libraries(map_publisher ${catkin_LIBRARIES} ${OpenCV_LIBS} Eigen3::Eigen)
+add_executable(robsim_node src/robsim_node.cpp src/roblibs/grid_map.cpp src/roblibs/world_item.cpp src/roblibs/draw_helpers.cpp src/roblibs/laser_scanner.cpp src/roblibs/laser_scan.cpp)
+target_link_libraries(robsim_node ${catkin_LIBRARIES} ${OpenCV_LIBS} ${YAML_CPP_LIBRARIES})
 
+add_executable(parser src/main.cpp)
+target_link_libraries(parser ${catkin_LIBRARIES} ${OpenCV_LIBS} ${YAML_CPP_LIBRARIES})
 
+# The executables can be found in the devel/lib directory of your workspace.

@@ -4,7 +4,7 @@
   <param name="robot_description" textfile="$(find ros_2d_multi_robot_simulator)/urdf/simple_circle_robot.urdf"/>
   
   <!-- Start the robot state publisher -->
-  <node name="map_publisher" pkg="ros_2d_multi_robot_simulator" type="map_publisher" output="screen"/>
+  <node name="robsim_node" pkg="ros_2d_multi_robot_simulator" type="robsim_node" output="screen"/>
   
   <!-- Start the Rviz package -->
   <node name="rviz" pkg="rviz" type="rviz"/>

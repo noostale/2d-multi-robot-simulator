@@ -28,6 +28,8 @@
  * 3. [x] Implement a tf between the map and the pose of the robot using the tf2_ros library on topic /tf
  * 4. [x] Implement laser scan publisher using the laser_scanner.h library on topic /scan
  * 5. [x] Implement velocity command publisher using the world_item.h library on topic /cmd_vel
+ * 6. [x] Implement a yaml parser to get the map name from the config file
+ * 7. [ ] Implement multiple robots in the world
  */
 
 /**
@@ -47,6 +49,8 @@ Isometry2f fromCoefficients(float tx, float ty, float alpha)
 
 int main(int argc, char **argv)
 {
+    std::string mapName = argv[1]; // Get the map name from the input arguments
+
     std::string logo = R"(
     ██████╗  ██████╗ ██████╗ ███████╗██╗███╗   ███╗
     ██╔══██╗██╔═══██╗██╔══██╗██╔════╝██║████╗ ████║
@@ -60,9 +64,9 @@ int main(int argc, char **argv)
     std::cout << "2D Multi Robot Simulator - Emanuele Frasca 1836098" << std::endl;
     std::cout << logo << std::endl;
 
-    ros::init(argc, argv, "map_publisher_node"); // Initialize a ROS node with the name map_publisher_node
-    ros::NodeHandle nh;                          // Create a ROS node handle
-    Canvas canvas;                               // Create a canvas to draw the world state
+    ros::init(argc, argv, "robsim"); // Initialize a ROS node with the name map_publisher_node
+    ros::NodeHandle nh;              // Create a ROS node handle
+    Canvas canvas;                   // Create a canvas to draw the world state
 
     // ROS publishers
     ros::Publisher map_pub = nh.advertise<nav_msgs::OccupancyGrid>("/map", 1, true);             // Create a ROS publisher for the map
@@ -73,7 +77,9 @@ int main(int argc, char **argv)
 
     // Create a GridMap istance and load the map from an image file using the loadFromImage method
     GridMap grid_map(0, 0, 0.1);
-    grid_map.loadFromImage("/mnt/c/Users/Emanuele/Desktop/RPT/workspace/catkin_ws/src/ros_2d_multi_robot_simulator/maps/cappero_laser_odom_diag_2020-05-06-16-26-03.png", 0.1); // 0.1 is the resolution of the map
+    std::string mapPath = "/mnt/c/Users/Emanuele/Desktop/RPT/workspace/catkin_ws/src/" + mapName;
+
+    grid_map.loadFromImage(mapPath.c_str(), 0.1); // 0.1 is the resolution of the map
 
     // Create a Word based on the grid map
     World world_object(grid_map);
