@@ -1,0 +1,33 @@
+# Configuration file for the environment env1
+
+environment:
+  map: "grid_map.yaml"
+
+robots:
+  - id: robot1
+    frame_id: "robot1_frame"
+    max_velocity:
+      linear: 1.0  # m/s
+      angular: 0.5  # rad/s
+    devices:
+      - type: lidar
+        frame_id: "lidar1_frame"
+        topic: "/robot1/lidar"
+        beams: 180
+        range:
+          min: 0.2
+          max: 10.0
+
+  - id: robot2
+    frame_id: "robot2_frame"
+    max_velocity:
+      linear: 1.5
+      angular: 0.7
+    devices:
+      - type: lidar
+        frame_id: "lidar2_frame"
+        topic: "/robot2/lidar"
+        beams: 360
+        range:
+          min: 0.1
+          max: 15.0

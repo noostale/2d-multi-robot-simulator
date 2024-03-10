@@ -1,0 +1,19 @@
+<?xml version="1.0"?>
+<robot name="simple_circle_robot">
+
+  <!-- Materials deinitions -->
+  <material name="red">
+    <color rgba="1 0 0 1"/>
+  </material>
+
+  <!-- Link definitions -->
+  <link name="pose">
+    <visual>
+      <geometry>
+        <cylinder radius="1" length="0.1"/> <!-- The length is 0.1 to make it a 2D-like -->
+      </geometry>
+      <material name="red"/>
+    </visual>
+  </link>
+
+</robot>
