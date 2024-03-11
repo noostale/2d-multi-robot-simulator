@@ -29,7 +29,8 @@
  * 4. [x] Implement laser scan publisher using the laser_scanner.h library on topic /scan
  * 5. [x] Implement velocity command publisher using the world_item.h library on topic /cmd_vel
  * 6. [x] Implement a yaml parser to get the map name from the config file
- * 7. [ ] Implement multiple robots in the world
+ * 7. [x] Implement struct to memorize robots configurations
+ * 8. [ ] Implement multiple robots in the world
  */
 
 /**
@@ -38,6 +39,29 @@
  */
 
 // Coefficients to Isometry2f object
+
+
+// We can use the following structs to store the configuration of the robot and its sensors extracted from a YAML file
+
+// Robot configuration struct
+struct RobotConfig {
+    std::string id;
+    std::string frame_id;
+    float max_linear_velocity;
+    float max_angular_velocity;
+    std::vector<struct SensorConfig> devices;
+};
+
+// Sensor configuration struct
+struct SensorConfig {
+    std::string type;
+    std::string frame_id;
+    std::string topic;
+    int beams;
+    float range_min;
+    float range_max;
+};
+
 Isometry2f fromCoefficients(float tx, float ty, float alpha)
 {
     Isometry2f iso;
