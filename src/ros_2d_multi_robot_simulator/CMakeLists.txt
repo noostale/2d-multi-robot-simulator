@@ -228,7 +228,7 @@ include_directories(
 add_executable(robsim_node src/robsim_node.cpp src/roblibs/grid_map.cpp src/roblibs/world_item.cpp src/roblibs/draw_helpers.cpp src/roblibs/laser_scanner.cpp src/roblibs/laser_scan.cpp)
 target_link_libraries(robsim_node ${catkin_LIBRARIES} ${OpenCV_LIBS} ${YAML_CPP_LIBRARIES})
 
-add_executable(parser src/main.cpp)
-target_link_libraries(parser ${catkin_LIBRARIES} ${OpenCV_LIBS} ${YAML_CPP_LIBRARIES})
+# add_executable(parser src/main.cpp)
+# target_link_libraries(parser ${catkin_LIBRARIES} ${OpenCV_LIBS} ${YAML_CPP_LIBRARIES})
 
 # The executables can be found in the devel/lib directory of your workspace.

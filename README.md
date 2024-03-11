@@ -2,37 +2,32 @@
 
 ## What?
 
-Write a C++ configurable multi robot simlator supporting:
-
-- Grid maps
-- Unicycle like mobile robots
-- Laser Scanners
-
-The system should read the configuration from a text file specifying the layout of the simulation environment:
-
-- for each device : the frame_id, and the topics. If a device is mounted on another device, the position in w.r.t the parent device.
-- For a lidar the number of beams and the max/min range.
-- For a robot the maximum velocities.
-
-The output should be integrated in ROS and work with the navigation stack.
-
-## How
+The aim of this project is to create a 2D multi-robot simulator using the roblibs and integrating it with ROS. In particular the simulator is able to parse a configuration file and create a simulation environment with multiple robots and a given map.
 
 ## How to compile
 
 To compile the project, you need to have installed the following packages in `Ubuntu 20.04`:
-- [ROS Noetic](http://wiki.ros.org/noetic/Installation/Ubuntu)
-- [OpenCV](https://docs.opencv.org/4.5.2/d7/d9f/tutorial_linux_install.html)
+- ROS Noetic
+- OpenCV
+- Eigen
+- YAML-CPP
 
-
-Clone the repository and compile it with the following commands:
+To compile the project, you can run the following script in the root directory of the project:
 
 ```bash
-catkin_make
+./compile.sh
 ```
 
-If you alread have a catkin workspace, you can clone the repository in the `src` folder of your workspace.
+This script will add the the workspace to the ROS environment and compile the project.
 
 ## How to run
 
+To run the project, you can run the following script in the root directory of the project:
+
+```bash
+./run.sh
+```
+
 ## How to test
+
+You can change the configuration of the simulation by modifying the `config.yaml` file in the `config` directory. The file is self-explanatory and contains the configuration of the simulation environment.
