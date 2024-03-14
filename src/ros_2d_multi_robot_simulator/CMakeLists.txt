@@ -8,16 +8,16 @@ project(ros_2d_multi_robot_simulator)
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
-  amcl
-  map_server
-  robot_state_publisher
+  # amcl
+  # map_server
+  # robot_state_publisher
   roscpp
   rviz
   std_msgs
   tf
-  joint_state_publisher
-  move_base
-  stage_ros
+  # joint_state_publisher
+  # move_base
+  # stage_ros
 )
 
 find_package(OpenCV REQUIRED)

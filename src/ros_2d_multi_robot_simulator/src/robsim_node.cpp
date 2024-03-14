@@ -48,19 +48,12 @@
  * 15. [x] Add rviz choice to the launch file
  * 16. [x] Add rqt_graph choice to the launch file
  * 17. [x] Add the radius of the robot to the robot configuration
+ * 18. [x] Fixed the laser scanners
  */
 
 /**
  * TOSOLVE:
  * 1. The map is published but it is displayed in the wrong way in rviz
- */
-
-// We can use the following structs to store the configuration of the robot and its sensors extracted from a YAML file
-
-/**
- *   system("xterm -e 'roscore' &");
- *   system(("xterm -e './robsim_node " + mapName + "' &").c_str());
- *   system("xterm -e 'rviz' &");
  */
 
 std::string MapName; // Global variable to store the map name
@@ -93,11 +86,16 @@ struct SensorConfig
     float range_max;
 };
 
-// Function to parse the robot configurations from a YAML file, it returns a vector of RobotConfig objects
+/**
+* parseRobotConfigs function:
+* This function parses the robot configurations from a YAML file
+* It returns a vector of RobotConfig structs used to store the robot configurations
+* to be used in defining the robots and their sensors
+**/
 std::vector<RobotConfig> parseRobotConfigs(const std::string &config_file)
 {
-
-    std::vector<RobotConfig> robot_configs; // Vector to store the robots configurations
+    // Vector to store the robots configurations (output of the function)
+    std::vector<RobotConfig> robot_configs; 
 
     // Load the YAML file
     YAML::Node config = YAML::LoadFile(config_file);
@@ -123,7 +121,7 @@ std::vector<RobotConfig> parseRobotConfigs(const std::string &config_file)
         robot_config.max_linear_velocity = robot_node["max_velocity"]["linear"].as<float>();
         robot_config.max_angular_velocity = robot_node["max_velocity"]["angular"].as<float>();
 
-        // Parse the sensor configurations
+        // Loop over the sensors of the robot
         for (YAML::const_iterator it_dev = robot_node["devices"].begin(); it_dev != robot_node["devices"].end(); ++it_dev)
         {
             SensorConfig sensor_config; // Create a SensorConfig struct to store the sensor configuration
@@ -162,7 +160,7 @@ Isometry2f fromCoefficients(float tx, float ty, float alpha)
 int main(int argc, char **argv)
 {
     // std::string configName = argv[1]; // Get the config name from the second input argument
-    std::vector<RobotConfig> robotsConfig = parseRobotConfigs("/mnt/c/Users/Emanuele/Documents/GitHub/2d-multi-robot-simulator/src/ros_2d_multi_robot_simulator/src/env1.yaml"); // Use the parse function to populate the configs
+    std::vector<RobotConfig> robotsConfig = parseRobotConfigs("/mnt/c/Users/noost/Documents/GitHub/2d-multi-robot-simulator/src/ros_2d_multi_robot_simulator/src/env1.yaml"); // Use the parse function to populate the configs
     // Print the parsed map name
     std::cout << "Map name: " << MapName << std::endl;
 
@@ -187,7 +185,7 @@ int main(int argc, char **argv)
 
     // Create a GridMap istance and load the map from an image file using the loadFromImage method
     GridMap grid_map(0, 0, 0.1);
-    std::string mapPath = "/mnt/c/Users/Emanuele/Documents/GitHub/2d-multi-robot-simulator/src/ros_2d_multi_robot_simulator/maps/" + MapName;
+    std::string mapPath = "/mnt/c/Users/noost/Documents/GitHub/2d-multi-robot-simulator/src/ros_2d_multi_robot_simulator/maps/" + MapName;
 
     grid_map.loadFromImage(mapPath.c_str(), 0.1); // 0.1 is the resolution of the map
 
@@ -233,11 +231,12 @@ int main(int argc, char **argv)
     Vector2f world_middle = grid_map.grid2world(grid_middle); // Convert the grid middle to world coordinates
 
     // Vector to store pointers to the robot instances
-    // So this is a vector of pointers to UnicyclePlatform objects
     std::vector<UnicyclePlatform *> robots;
 
+    // Vector to store the laser scanners 
+    std::vector<LaserScanner *> laser_scanners;
+
     // Vectors to store the publishers for each robot
-    // So these are vectors of publishers
     std::vector<ros::Publisher> pose_pubs, scan_pubs, cmd_vel_pubs;
 
     // Instantiate robots and their publishers
@@ -255,8 +254,26 @@ int main(int argc, char **argv)
         // Create publishers for this robot
         std::string robot_ns = "robot_" + robot_config.id; // Namespace for the robot
         pose_pubs.push_back(nh.advertise<geometry_msgs::PoseStamped>(robot_ns + "/robot_pose", 1, true));
-        scan_pubs.push_back(nh.advertise<sensor_msgs::LaserScan>(robot_ns + "/scan", 1, true));
         cmd_vel_pubs.push_back(nh.advertise<geometry_msgs::TwistStamped>(robot_ns + "/cmd_vel", 1, true));
+        
+        // NOTE: If you use the new keyword to create an object, you are creating a pointer to the object, so that you can access it by reference and not by value (which would create a copy of the object) since we want to modify the object
+        // created in this loop. If you don't use the new keyword but you create a pointer like LasterScan* scan; you are creating a pointer to a non-existing object, so you have to create the object using the new keyword
+
+
+        // Loop over the sensors of the robot
+        for (const SensorConfig &sensor_config : robot_config.devices) {
+            if (sensor_config.type == "lidar") {
+                LaserScan *scan = new LaserScan(); // Dynamically create a new LaserScan object
+                LaserScanner *scanner = new LaserScanner(*scan, *robot, fromCoefficients(3, 0, -0));
+                scan->range_min = sensor_config.range_min;
+                scan->range_max = sensor_config.range_max;
+
+                laser_scanners.push_back(scanner);
+
+                std::string scan_topic = sensor_config.topic;
+                scan_pubs.push_back(nh.advertise<sensor_msgs::LaserScan>(robot_ns + "/scan", 1, true));
+    }
+}
     }
 
     ros::Rate loop_rate(10); // Set the ros loop rate to 10Hz
@@ -269,6 +286,7 @@ int main(int argc, char **argv)
         for (size_t i = 0; i < robots.size(); ++i)
         {
             auto &robot = robots[i]; // Returns a pointer to the i-th robot
+            auto &scanner = laser_scanners[i]; // Returns a pointer to the i-th laser scanner
 
             // Create and populate the PoseStamped message
             Isometry2f robot_pose = robot->pose_in_parent; // Get the current pose of the robot from the WorldItem object
@@ -317,25 +335,22 @@ int main(int argc, char **argv)
             // LASER SCAN MESSAGE - This rappresents a single laser scan
 
             // Create a LaserScan object based on the robot (that is located in a Word item) and set its radius
-            LaserScan scan;                                                 // This is a single laser scan created using the LaserScan class
-            LaserScanner scanner(scan, *robot, fromCoefficients(3, 0, -0)); // This is the laser scanner that will be used to scan the environment
+                                                             // This is a single laser scan created using the LaserScan class
             // Set the parameters of the laser scanner using the values contained in the robotsConfig vector
 
-            scan.range_min = robotsConfig[i].devices[0].range_min; // Set the minimum range of the laser scanner
-            scan.range_max = robotsConfig[i].devices[0].range_max; // Set the maximum range of the laser scanner
 
-            scanner.getScan(); // Get the scan from the laser scanner
+            scanner->getScan(); // Get the scan from the laser scanner, this is a void function that modifies the scan object
 
             sensor_msgs::LaserScan laser_scan_msg;
 
             laser_scan_msg.header.stamp = ros::Time::now();
             laser_scan_msg.header.frame_id = "robot_" + robotsConfig[i].frame_id;
-            laser_scan_msg.angle_min = scan.angle_min;
-            laser_scan_msg.angle_max = scan.angle_max;
-            laser_scan_msg.angle_increment = (scan.angle_max - scan.angle_min) / scan.ranges.size();
-            laser_scan_msg.range_min = scan.range_min;
-            laser_scan_msg.range_max = scan.range_max;
-            laser_scan_msg.ranges = scan.ranges;
+            laser_scan_msg.angle_min = scanner->scan.angle_min;
+            laser_scan_msg.angle_max = scanner->scan.angle_max;
+            laser_scan_msg.angle_increment = (scanner->scan.angle_max - scanner->scan.angle_min) / scanner->scan.ranges.size();
+            laser_scan_msg.range_min = scanner->scan.range_min;
+            laser_scan_msg.range_max = scanner->scan.range_max;
+            laser_scan_msg.ranges = scanner->scan.ranges;
             scan_pubs[i].publish(laser_scan_msg);
 
             // GEOMETRY MESSAGE - This is the velocity command message
@@ -347,7 +362,8 @@ int main(int argc, char **argv)
 
             float dt = 0.1;
             world_object.tick(dt); // Update the world state
-            scanner.tick(dt);      // Update the laser scanner state
+            // scanner->tick(dt);      // Update the laser scanner state
+            // robot->tick(dt);        // Update the robot state
             world_object.draw(canvas);
             int ret = showCanvas(canvas, dt * 100);
 
