@@ -21,7 +21,7 @@
 #include "roblibs/laser_scanner.h"
 #include "roblibs/laser_scan.h"
 
-// Parsing and
+// Parsing and system libraries
 #include <yaml-cpp/yaml.h>
 #include <iostream>
 #include <cstdlib>
@@ -87,15 +87,15 @@ struct SensorConfig
 };
 
 /**
-* parseRobotConfigs function:
-* This function parses the robot configurations from a YAML file
-* It returns a vector of RobotConfig structs used to store the robot configurations
-* to be used in defining the robots and their sensors
-**/
+ * parseRobotConfigs function:
+ * This function parses the robot configurations from a YAML file
+ * It returns a vector of RobotConfig structs used to store the robot configurations
+ * to be used in defining the robots and their sensors
+ **/
 std::vector<RobotConfig> parseRobotConfigs(const std::string &config_file)
 {
     // Vector to store the robots configurations (output of the function)
-    std::vector<RobotConfig> robot_configs; 
+    std::vector<RobotConfig> robot_configs;
 
     // Load the YAML file
     YAML::Node config = YAML::LoadFile(config_file);
@@ -233,7 +233,7 @@ int main(int argc, char **argv)
     // Vector to store pointers to the robot instances
     std::vector<UnicyclePlatform *> robots;
 
-    // Vector to store the laser scanners 
+    // Vector to store the laser scanners
     std::vector<LaserScanner *> laser_scanners;
 
     // Vectors to store the publishers for each robot
@@ -255,14 +255,15 @@ int main(int argc, char **argv)
         std::string robot_ns = "robot_" + robot_config.id; // Namespace for the robot
         pose_pubs.push_back(nh.advertise<geometry_msgs::PoseStamped>(robot_ns + "/robot_pose", 1, true));
         cmd_vel_pubs.push_back(nh.advertise<geometry_msgs::TwistStamped>(robot_ns + "/cmd_vel", 1, true));
-        
+
         // NOTE: If you use the new keyword to create an object, you are creating a pointer to the object, so that you can access it by reference and not by value (which would create a copy of the object) since we want to modify the object
         // created in this loop. If you don't use the new keyword but you create a pointer like LasterScan* scan; you are creating a pointer to a non-existing object, so you have to create the object using the new keyword
 
-
         // Loop over the sensors of the robot
-        for (const SensorConfig &sensor_config : robot_config.devices) {
-            if (sensor_config.type == "lidar") {
+        for (const SensorConfig &sensor_config : robot_config.devices)
+        {
+            if (sensor_config.type == "lidar")
+            {
                 LaserScan *scan = new LaserScan(); // Dynamically create a new LaserScan object
                 LaserScanner *scanner = new LaserScanner(*scan, *robot, fromCoefficients(3, 0, -0));
                 scan->range_min = sensor_config.range_min;
@@ -272,8 +273,8 @@ int main(int argc, char **argv)
 
                 std::string scan_topic = sensor_config.topic;
                 scan_pubs.push_back(nh.advertise<sensor_msgs::LaserScan>(robot_ns + "/scan", 1, true));
-    }
-}
+            }
+        }
     }
 
     ros::Rate loop_rate(10); // Set the ros loop rate to 10Hz
@@ -281,11 +282,10 @@ int main(int argc, char **argv)
 
     while (ros::ok())
     {
-
         // Run a loop for every robot in the robots vector
         for (size_t i = 0; i < robots.size(); ++i)
         {
-            auto &robot = robots[i]; // Returns a pointer to the i-th robot
+            auto &robot = robots[i];           // Returns a pointer to the i-th robot
             auto &scanner = laser_scanners[i]; // Returns a pointer to the i-th laser scanner
 
             // Create and populate the PoseStamped message
@@ -335,9 +335,8 @@ int main(int argc, char **argv)
             // LASER SCAN MESSAGE - This rappresents a single laser scan
 
             // Create a LaserScan object based on the robot (that is located in a Word item) and set its radius
-                                                             // This is a single laser scan created using the LaserScan class
+            // This is a single laser scan created using the LaserScan class
             // Set the parameters of the laser scanner using the values contained in the robotsConfig vector
-
 
             scanner->getScan(); // Get the scan from the laser scanner, this is a void function that modifies the scan object
 
