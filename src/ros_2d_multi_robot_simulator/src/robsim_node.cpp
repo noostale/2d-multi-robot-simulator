@@ -230,10 +230,8 @@ int main(int argc, char **argv)
 
     Vector2f world_middle = grid_map.grid2world(grid_middle); // Convert the grid middle to world coordinates
 
-    // Vector to store pointers to the robot instances
+    // Vector to store pointers to the robot instances and laser scanners
     std::vector<UnicyclePlatform *> robots;
-
-    // Vector to store the laser scanners
     std::vector<LaserScanner *> laser_scanners;
 
     // Vectors to store the publishers for each robot
@@ -334,23 +332,27 @@ int main(int argc, char **argv)
 
             // LASER SCAN MESSAGE - This rappresents a single laser scan
 
-            // Create a LaserScan object based on the robot (that is located in a Word item) and set its radius
-            // This is a single laser scan created using the LaserScan class
-            // Set the parameters of the laser scanner using the values contained in the robotsConfig vector
+            for (int j = 0; j < robotsConfig[i].devices.size(); j++)
+            {
+                if (robotsConfig[i].devices[j].type == "lidar")
+                {
+                    // Get the scan from the laser scanner, this is a void function that modifies the scan object (contained in the LaserScanner class)
+                    scanner->getScan();
 
-            scanner->getScan(); // Get the scan from the laser scanner, this is a void function that modifies the scan object
+                    sensor_msgs::LaserScan laser_scan_msg;
 
-            sensor_msgs::LaserScan laser_scan_msg;
+                    laser_scan_msg.header.stamp = ros::Time::now();
+                    laser_scan_msg.header.frame_id = "robot_" + robotsConfig[i].frame_id;
+                    laser_scan_msg.angle_min = scanner->scan.angle_min;
+                    laser_scan_msg.angle_max = scanner->scan.angle_max;
+                    laser_scan_msg.angle_increment = (scanner->scan.angle_max - scanner->scan.angle_min) / scanner->scan.ranges.size();
+                    laser_scan_msg.range_min = scanner->scan.range_min;
+                    laser_scan_msg.range_max = scanner->scan.range_max;
+                    laser_scan_msg.ranges = scanner->scan.ranges;
 
-            laser_scan_msg.header.stamp = ros::Time::now();
-            laser_scan_msg.header.frame_id = "robot_" + robotsConfig[i].frame_id;
-            laser_scan_msg.angle_min = scanner->scan.angle_min;
-            laser_scan_msg.angle_max = scanner->scan.angle_max;
-            laser_scan_msg.angle_increment = (scanner->scan.angle_max - scanner->scan.angle_min) / scanner->scan.ranges.size();
-            laser_scan_msg.range_min = scanner->scan.range_min;
-            laser_scan_msg.range_max = scanner->scan.range_max;
-            laser_scan_msg.ranges = scanner->scan.ranges;
-            scan_pubs[i].publish(laser_scan_msg);
+                    scan_pubs[i].publish(laser_scan_msg);
+                }
+            }
 
             // GEOMETRY MESSAGE - This is the velocity command message
 
