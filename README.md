@@ -2,7 +2,7 @@
 
 ## What?
 
-The aim of this project is to create a 2D multi-robot simulator using the roblibs and integrating it with ROS. In particular the simulator is able to parse a configuration file and create a simulation environment with multiple robots and a given map.
+The aim of this project is to create a 2D multi-robot simulator using the roblibs and integrating it with ROS. In particular the simulator is able to parse a configuration file and create a simulation environment with multiple robots, devices and a given map.
 
 ## How to compile
 
@@ -11,6 +11,12 @@ To compile the project, you need to have installed the following packages in `Ub
 - OpenCV
 - Eigen
 - YAML-CPP
+
+To install the requirements, you can run the following script in the root directory of the project:
+
+```bash
+./install_requirements.sh
+```
 
 To compile the project, you can run the following script in the root directory of the project:
 
