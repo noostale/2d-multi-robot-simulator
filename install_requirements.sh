@@ -12,3 +12,6 @@ sudo apt install -y libopencv-dev
 
 # Install yaml-cpp library
 sudo apt install -y libyaml-cpp-dev
+
+# Install Eigen library
+sudo apt install -y libeigen3-dev
