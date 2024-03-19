@@ -147,7 +147,7 @@ Isometry2f fromCoefficients(float tx, float ty, float alpha)
 int main(int argc, char **argv)
 {
     // std::string configName = argv[1]; // Get the config name from the second input argument
-    std::vector<RobotConfig> robotsConfig = parseRobotConfigs("/mnt/c/Users/noost/Documents/GitHub/2d-multi-robot-simulator/src/ros_2d_multi_robot_simulator/src/env1.yaml"); // Use the parse function to populate the configs
+    std::vector<RobotConfig> robotsConfig = parseRobotConfigs("./src/ros_2d_multi_robot_simulator/configs/env1.yaml"); // Use the parse function to populate the configs
     // Print the parsed map name
     std::cout << "Map name: " << MapName << std::endl;
 
@@ -172,7 +172,7 @@ int main(int argc, char **argv)
 
     // Create a GridMap istance and load the map from an image file using the loadFromImage method
     GridMap grid_map(0, 0, 0.1);
-    std::string mapPath = "/mnt/c/Users/noost/Documents/GitHub/2d-multi-robot-simulator/src/ros_2d_multi_robot_simulator/maps/" + MapName;
+    std::string mapPath = "./src/ros_2d_multi_robot_simulator/maps/" + MapName;
 
     grid_map.loadFromImage(mapPath.c_str(), 0.1); // 0.1 is the resolution of the map
 
