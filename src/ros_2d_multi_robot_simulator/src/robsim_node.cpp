@@ -1,7 +1,4 @@
-#define ENABLE_DEBUG // Enable or disable debug messages
-#include "debug.h"   // Include the debug.h library to print debug messages
-
-#include <ros/ros.h> // Include the ROS library
+#include <ros/ros.h> 
 
 // Inlude the necessary ROS messages
 #include <nav_msgs/OccupancyGrid.h>
@@ -21,13 +18,8 @@
 #include "roblibs/laser_scanner.h"
 #include "roblibs/laser_scan.h"
 
-// Parsing and system libraries
+// Parsing library for the YAML config file
 #include <yaml-cpp/yaml.h>
-#include <iostream>
-#include <cstdlib>
-#include <unistd.h>
-#include <sys/types.h>
-#include <sys/wait.h>
 
 /**
  * TODO:
@@ -49,11 +41,6 @@
  * 16. [x] Add rqt_graph choice to the launch file
  * 17. [x] Add the radius of the robot to the robot configuration
  * 18. [x] Fixed the laser scanners
- */
-
-/**
- * TOSOLVE:
- * 1. The map is published but it is displayed in the wrong way in rviz
  */
 
 std::string MapName; // Global variable to store the map name
@@ -224,9 +211,6 @@ int main(int argc, char **argv)
     map_pub.publish(map_msg); // Publish the map message
 
     Vector2f grid_middle(grid_map.cols / 2, grid_map.rows / 2); // Vector that defines the middle of the grid map
-    DEBUG_PRINT("Grid middle: " << grid_middle.x() << " " << grid_middle.y());
-    DEBUG_PRINT("Grid cols: " << grid_map.cols);
-    DEBUG_PRINT("Grid rows: " << grid_map.rows);
 
     Vector2f world_middle = grid_map.grid2world(grid_middle); // Convert the grid middle to world coordinates
 
@@ -254,8 +238,15 @@ int main(int argc, char **argv)
         pose_pubs.push_back(nh.advertise<geometry_msgs::PoseStamped>(robot_ns + "/robot_pose", 1, true));
         cmd_vel_pubs.push_back(nh.advertise<geometry_msgs::TwistStamped>(robot_ns + "/cmd_vel", 1, true));
 
-        // NOTE: If you use the new keyword to create an object, you are creating a pointer to the object, so that you can access it by reference and not by value (which would create a copy of the object) since we want to modify the object
-        // created in this loop. If you don't use the new keyword but you create a pointer like LasterScan* scan; you are creating a pointer to a non-existing object, so you have to create the object using the new keyword
+        //*
+        // NOTE: If you use the new keyword to create an object, you are
+        // creating a pointer to the object, so that you can access it by
+        // reference and not by value (which would create a copy of the object)
+        // since we want to modify the object created in this loop. If you
+        // don't use the new keyword but you create a pointer like LasterScan*
+        // scan; you are creating a pointer to a non-existing object, so you
+        // have to create the object using the new keyword
+        //*
 
         // Loop over the sensors of the robot
         for (const SensorConfig &sensor_config : robot_config.devices)
@@ -276,15 +267,14 @@ int main(int argc, char **argv)
     }
 
     ros::Rate loop_rate(10); // Set the ros loop rate to 10Hz
-    int count = 0;           // Initialize a counter to know how many times the loop has run
 
     while (ros::ok())
     {
         // Run a loop for every robot in the robots vector
         for (size_t i = 0; i < robots.size(); ++i)
         {
-            auto &robot = robots[i];           // Returns a pointer to the i-th robot
-            auto &scanner = laser_scanners[i]; // Returns a pointer to the i-th laser scanner
+            auto &robot = robots[i]; // Returns a pointer to the i-th robot
+            auto &scanner = laser_scanners[i];
 
             // Create and populate the PoseStamped message
             Isometry2f robot_pose = robot->pose_in_parent; // Get the current pose of the robot from the WorldItem object
@@ -337,6 +327,7 @@ int main(int argc, char **argv)
                 if (robotsConfig[i].devices[j].type == "lidar")
                 {
                     // Get the scan from the laser scanner, this is a void function that modifies the scan object (contained in the LaserScanner class)
+                    // add if to check if the laser is ready
                     scanner->getScan();
 
                     sensor_msgs::LaserScan laser_scan_msg;
@@ -356,84 +347,100 @@ int main(int argc, char **argv)
 
             // GEOMETRY MESSAGE - This is the velocity command message
 
-            // Create and populate the TwistStamped message
+            // Create and populate the TwistStamped message header,
+            // The rest of the message is populated in the loop below
             geometry_msgs::TwistStamped cmd_vel_msg;
             cmd_vel_msg.header.stamp = ros::Time::now();
             cmd_vel_msg.header.frame_id = "robot_" + robotsConfig[i].frame_id;
 
             float dt = 0.1;
             world_object.tick(dt); // Update the world state
-            // scanner->tick(dt);      // Update the laser scanner state
-            // robot->tick(dt);        // Update the robot state
             world_object.draw(canvas);
             int ret = showCanvas(canvas, dt * 100);
 
             if (ret > 0)
                 std::cerr << "Key pressed: " << ret << std::endl; // Print the key pressed
+
             switch (ret)
             {
+
             case 49: // 0
                 std::cout << "Robot 0 selected" << std::endl;
                 selected_robot = 0;
                 break;
+
             case 50: // 1
                 std::cout << "Robot 1 selected" << std::endl;
                 selected_robot = 1;
                 break;
+
             case 51: // 2
                 std::cout << "Robot 2 selected" << std::endl;
                 selected_robot = 2;
                 break;
+
             case 52: // 3
                 std::cout << "Robot 3 selected" << std::endl;
                 selected_robot = 3;
                 break;
+
             case 53: // 4
                 std::cout << "Robot 4 selected" << std::endl;
                 selected_robot = 4;
                 break;
+
             case 54: // 5
                 std::cout << "Robot 5 selected" << std::endl;
                 selected_robot = 5;
                 break;
+
             case 55: // 6
                 std::cout << "Robot 6 selected" << std::endl;
                 selected_robot = 6;
                 break;
+
             case 56: // 7
                 std::cout << "Robot 7 selected" << std::endl;
                 selected_robot = 7;
                 break;
+
             case 57: // 8
                 std::cout << "Robot 8 selected" << std::endl;
                 selected_robot = 8;
                 break;
+
             case 58: // 9
                 std::cout << "Robot 9 selected" << std::endl;
                 selected_robot = 9;
                 break;
+
             case 81: // left, changes the angular velocity of the selected robot
                 robots[selected_robot]->rv = 1;
                 cmd_vel_msg.twist.angular.z = robots[selected_robot]->rv;
                 break;
+
             case 82: // up, changes the linear velocity of the selected robot
                 robots[selected_robot]->tv = 5;
                 cmd_vel_msg.twist.linear.x = robots[selected_robot]->tv;
                 break;
+
             case 83: // right, changes the angular velocity of the selected robot
                 robots[selected_robot]->rv = -1;
                 cmd_vel_msg.twist.angular.z = robots[selected_robot]->rv;
                 break;
+
             case 84: // down, changes the linear velocity of the selected robot
                 robots[selected_robot]->tv = -5;
                 cmd_vel_msg.twist.linear.x = robots[selected_robot]->tv;
                 break;
+
             case 32: // space, stops the selected robot
                 robots[selected_robot]->rv = 0;
                 cmd_vel_msg.twist.angular.z = robots[selected_robot]->rv;
                 robots[selected_robot]->tv = 0;
                 cmd_vel_msg.twist.linear.x = robots[selected_robot]->tv;
                 break;
+
             default:
                 break;
             }
@@ -444,7 +451,6 @@ int main(int argc, char **argv)
 
         ros::spinOnce();   // Allow the ROS node to process incoming messages
         loop_rate.sleep(); // Sleep for the remaining time to let us run at 10Hz
-        ++count;           // Increment the count to know how many times the loop has run
     }
 
     return 0;
