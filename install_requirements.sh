@@ -15,3 +15,6 @@ sudo apt install -y libyaml-cpp-dev
 
 # Install Eigen library
 sudo apt install -y libeigen3-dev
+
+# install xterm
+sudo apt install -y xterm
