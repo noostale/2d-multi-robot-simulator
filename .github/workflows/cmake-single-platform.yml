@@ -23,8 +23,11 @@ jobs:
     - name: Install project-specific requirements
       run: ./install_requirements.sh
 
-    - name: Source ros-noetic
-      run: source /opt/ros/noetic/setup.bash
+    - name: Install catkin_make
+      run: sudo apt install python3-catkin-lint python3-pip
+
+    - name: Install osrf-pycommon
+      run: pip3 install osrf-pycommon
 
     - name: Make compile.sh executable
       run: chmod +x ./compile.sh
